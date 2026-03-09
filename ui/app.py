@@ -1,12 +1,21 @@
 import streamlit as st
+import logging
 import sys
 import os
+from langchain_core.messages import HumanMessage, AIMessage
 
 # 确保能导入外层目录的模块
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # 导入咱们刚才写好的工作流
 from graph.workflow import app as agent_app
+
+# 设置后端的日志 (记录 Agent 的思考过程)
+logging.basicConfig(
+    filename='agent_debug.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+)
 
 # --- 页面配置 ---
 st.set_page_config(page_title='哈尔滨冬季智能导游', page_icon='❄', layout='centered')
@@ -36,21 +45,37 @@ if user_input := st.chat_input('问点啥？比如：哈尔滨今天冷吗？哪
 
     # 2. 调用 Agent 大脑
     with st.chat_message('assistant'):
-        # 用一个旋转的菊花表示正在思考
-        with st.spinner('老铁正在疯狂搜集情报, 稍等...'):
-            # 构建初始状态传给图
-            initial_state = {'messages': st.session_state.agent_messages}
+        status_placeholder = st.empty()
+        status_placeholder.info('❄ 冰城老铁正在疯狂搜集情报, 稍等...')
 
-            # 运行工作流, 拿到最终状态
-            # 这里我们不用 stream, 直接用 invoke 拿到最后的结果
-            final_state = agent_app.invoke(initial_state)
+        # 3. 记录日志
+        logging.info(f'--- 新对话开始 ---')
+        logging.info(f'User Input: {user_input}')
 
-            # 提取最后一条 AI 说的话
-            final_response = final_state['messages'][-1].content
+        response_placeholder = st.empty()
+        full_response = ''
 
-            # 把新的消息更新到记忆里, 为了下一轮对话
-            st.session_state.agent_messages = final_state['messages']
+        # 4. 执行 Agent 流程
+        for event in agent_app.stream({'messages': st.session_state.agent_messages}):
+            for key, value in event.items():
+                if key == 'agent':
+                    # 记录大脑的思考
+                    last_msg = value['messages'][-1]
+                    if hasattr(last_msg, 'tool_calls') and last_msg.tool_calls:
+                        tool_names = [t['name'] for t in last_msg.tool_calls]
+                        logging.info(f'LLM 决定调用工具: {tool_names}')
+                        status_placeholder.warning(f'🔧 老铁决定使用工具: {tool_names}')
 
-        # 在界面上打印结果
-        st.markdown(final_response)
-        st.session_state.messages.append({'role': 'assistant', 'content': final_response})
+                    elif hasattr(last_msg, 'content') and last_msg.content:
+                        full_response += last_msg.content
+                        response_placeholder.markdown(full_response + '| ')
+
+                elif key == 'tools':
+                    # 记录日志, 执行结果
+                    tool_output = value['messages'][-1].content
+                    logging.info(f'工具执行结果: {tool_output[:50]}...')
+                    status_placeholder.success('√ 工具执行完毕, 情报已整合!!!')
+
+        # 完成后清理
+        status_placeholder.empty()
+        st.session_state.messages.append({'role': 'assistant', 'content': full_response})
