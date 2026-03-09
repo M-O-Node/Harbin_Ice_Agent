@@ -1,7 +1,9 @@
 import os
-import logging
 from datetime import datetime
 from dotenv import load_dotenv
+from utils.logger import setup_logger
+
+logger = setup_logger(__name__)
 
 # 加载配置
 load_dotenv()
@@ -14,13 +16,6 @@ from langgraph.prebuilt import ToolNode
 # 引入我们刚才构建的两只手
 from tools.tavily_search import tavily_tool
 from tools.milvus_rag import search_local_knowledge
-
-# 配置日志文件
-logging.basicConfig(
-    filename='agent_thought.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(message)s',
-)
 
 # 1. 组装工具箱 (List of Tools)
 tools = [tavily_tool, search_local_knowledge]
@@ -66,17 +61,22 @@ def call_model(state: AgentState):
     面对南方小土豆的复杂问题, 如果本地库没有, 一定要善用实时搜索. 
     最终的回答必须条理清晰
     """)
-    last_user_msg = state['messages'][-1].content
-    logging.info(f'User input: {last_user_msg}')
+    last_msg = state['messages'][-1].content
+    if hasattr(last_msg, 'content'):
+        last_user_msg = last_msg.content
+    else:
+        last_user_msg = str(last_msg)
+
+    logger.info(f'User input: {last_user_msg}')
 
     # 将系统提示词放在最前面, 加上之前的对话历史
     response = llm_with_tools.invoke([sys_msg] + message)
 
     # 记录模型的动作
     if response.tool_calls:
-        logging.info(f'LLM decided to call tools: {response.tool_calls}')
+        logger.info(f'LLM decided to call tools: {response.tool_calls}')
     else:
-        logging.info(f'LLM final answer: {response.content}')
+        logger.info(f'LLM final answer: {response.content}')
 
     # 返回新的状态 (追加消息)
     return {'messages': [response]}

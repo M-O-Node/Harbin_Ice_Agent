@@ -58,23 +58,3 @@ if __name__ == '__main__':
 
     print('\n=== 从 Milvus 捞回来的结果 ===')
     print(test_result)
-
-"""
-BertModel LOAD REPORT from: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-Key                     | Status     |  | 
-------------------------+------------+--+-
-embeddings.position_ids | UNEXPECTED |  | 
-
-Notes:
-- UNEXPECTED	:can be ignored when loading from different task/architecture; not ok if you expect identical arch.
-E:\work_space\p\idea021_harbin_ice_agent\Harbin_Ice_Agent\tools\milvus_rag.py:18: LangChainDeprecationWarning: The class `Milvus` was deprecated in LangChain 0.2.0 and will be removed in 1.0. An updated version of the class exists in the `langchain-milvus package and should be used instead. To use it run `pip install -U `langchain-milvus` and import as `from `langchain_milvus import MilvusVectorStore``.
-  vector_db = Milvus(
-正在测试 Milvus 工具
-
-[Milvus Tool 执行中] 正在去私有知识库检索: 哈尔滨吃锅包肉去哪?
-
-=== 从 Milvus 捞回来的结果 ===
-- 哈尔滨红肠，买点带走，但别忘了买当地的蒜酱，一起吃才香。
-- 逛道外巴洛克街区，感受老哈尔滨的风情，别忘了尝尝马迭尔冰棍。
-- 吃锅包肉要去老厨家，咬一口会吸气那种酸才正宗。别吃番茄酱做的，那是异端。
-"""

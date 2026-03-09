@@ -1,5 +1,4 @@
 import streamlit as st
-import logging
 import sys
 import os
 from langchain_core.messages import HumanMessage, AIMessage
@@ -9,13 +8,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # 导入咱们刚才写好的工作流
 from graph.workflow import app as agent_app
-
-# 设置后端的日志 (记录 Agent 的思考过程)
-logging.basicConfig(
-    filename='agent_debug.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-)
 
 # --- 页面配置 ---
 st.set_page_config(page_title='哈尔滨冬季智能导游', page_icon='❄', layout='centered')
@@ -41,16 +33,12 @@ if user_input := st.chat_input('问点啥？比如：哈尔滨今天冷吗？哪
     st.session_state.messages.append({'role': 'user', 'content': user_input})
 
     # 把用户的话加到 Agent 的记忆里
-    st.session_state.agent_messages.append(('user', user_input))
+    st.session_state.agent_messages.append(HumanMessage(content=user_input))
 
     # 2. 调用 Agent 大脑
     with st.chat_message('assistant'):
         status_placeholder = st.empty()
         status_placeholder.info('❄ 冰城老铁正在疯狂搜集情报, 稍等...')
-
-        # 3. 记录日志
-        logging.info(f'--- 新对话开始 ---')
-        logging.info(f'User Input: {user_input}')
 
         response_placeholder = st.empty()
         full_response = ''
@@ -63,7 +51,6 @@ if user_input := st.chat_input('问点啥？比如：哈尔滨今天冷吗？哪
                     last_msg = value['messages'][-1]
                     if hasattr(last_msg, 'tool_calls') and last_msg.tool_calls:
                         tool_names = [t['name'] for t in last_msg.tool_calls]
-                        logging.info(f'LLM 决定调用工具: {tool_names}')
                         status_placeholder.warning(f'🔧 老铁决定使用工具: {tool_names}')
 
                     elif hasattr(last_msg, 'content') and last_msg.content:
@@ -73,9 +60,9 @@ if user_input := st.chat_input('问点啥？比如：哈尔滨今天冷吗？哪
                 elif key == 'tools':
                     # 记录日志, 执行结果
                     tool_output = value['messages'][-1].content
-                    logging.info(f'工具执行结果: {tool_output[:50]}...')
                     status_placeholder.success('√ 工具执行完毕, 情报已整合!!!')
 
         # 完成后清理
         status_placeholder.empty()
         st.session_state.messages.append({'role': 'assistant', 'content': full_response})
+        st.session_state.agent_messages.append(AIMessage(content=full_response))
