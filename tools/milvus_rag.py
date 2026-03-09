@@ -1,3 +1,7 @@
+import warnings
+
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+
 import os
 from dotenv import load_dotenv
 from langchain_core.tools import tool
