@@ -1,76 +1,78 @@
 # 📋 Harbin-Ice-Agent 2.0: ❄️ 哈尔滨冬季智能导游
 
-> **A Production-Ready Multi-Agent System for Harbin Tourism built with LangGraph, Milvus, and Tavily.**
+> **一个能思考、会联网、懂哈尔滨本地话的智能旅游助手。**
+> 基于 LangGraph 工作流、Milvus 向量库和 Tavily 实时搜索构建。
 
-## 🌟 项目综述 (Overview)
-本项目不仅是一个简单的旅游问答机器人，而是一个基于 **ReAct (Reasoning and Acting)** 架构的智能体系统。它能够精准理解南方游客（“小土豆”）的复杂意图，通过自主规划逻辑，联动 **私有知识库 (RAG)** 与 **全网实时搜索**，提供具备时效性、专业性且极具东北人情味的旅游方案。
-
----
-
-## 🚀 架构演进史 (Evolution of Thought)
-*这是我从近 10 年 Java 后端老兵向 AI 架构师转型的技术思考结晶：*
-
-### V1.0: 基础 RAG 模式 (Sequential Pipeline)
-*   **实现**：基于 LangChain + Milvus 的线性流程。
-*   **痛点**：无法处理长难句和复合需求。系统只是“人找知识”，缺乏主动思考。
-*   **总结**：仅能解决 40% 的静态知识问答。
-
-### V2.0: LangGraph 多代理智能体 (Agentic State Machine)
-*   **升级点**：引入 **LangGraph** 将线性流程重构为**状态机图架构**。
-*   **核心逻辑**：
-    *   **Intent Dispatcher (意图分发)**：利用 LLM 自动拆解复杂长句。
-    *   **Autonomous Routing (自主路由)**：基于 **Function Calling** 决定调用私有库 (Milvus) 还是实时网 (Tavily)。
-    *   **ReAct Loop**：实现了 [思考 -> 行动 -> 观察 -> 再思考] 的闭环，直到获取完美答案。
+## 🌟 项目是干啥的？
+这个项目不是那种只会复读百科全书的傻机器人。它是专门为来哈尔滨玩的“南方小土豆”准备的。它能听懂复杂的长难句，会自动去我的私有知识库里查攻略，如果知识库里没有（比如昨天的票价、今天的天气），它还会自己上互联网去搜，最后汇总出一套靠谱的建议。
 
 ---
 
-## 🧠 技术核心 (Technical Highlights)
+## 🚀 架构是怎么演出来的？
+*这是我作为一个 10 年 Java 后端老兵，在折腾 AI 落地时的真实思考：*
 
-### 1. 模型微调经验 (Fine-tuning Background)
-在早期研发中，为了追求极致的文案风格化（如：纪录片级叙事风格），我曾基于 **Qwen1.5-14B** 进行 **SFT (监督微调)** 和 **QLoRA** 训练，产出了 **2.3GB 的适配器 (Adapter)**。
-*   **经验所得**：微调决定了模型的“性格与风格”，而 RAG 决定了模型的“事实准确度”。
-*   **当前选择**：V2.0 采用 **Qwen2.5-72B API** 作为核心大脑，旨在利用大参数模型的强推理能力来保障 Agent 决策的稳定性。
+### V1.0: 简单查库模式
+*   **做法**：用户问，系统去 Milvus 数据库里捞，捞到啥说啥。
+*   **不行的地方**：处理不了复杂问题。比如用户问：“我是一个南方小土豆, 今年冬天想去哈尔滨玩, 请给我推荐我应该穿什么, 有什么好吃的, 好玩的, 我要如何避坑?”
+*   **结果**：1.0 版本直接懵了，因为它没法一次性回答这么多维度的问题，给出的结果前言不搭后语。
 
-### 2. 知识库与检索 (RAG & VectorDB)
-*   **Milvus**：在阿里云部署企业级 Milvus 集群，存储哈尔滨本地正宗的美食与避坑攻略。
-*   **Hybrid Search**：结合 **sentence-transformers** 多语言模型实现高精度的语义检索。
-
-### 3. 可观测性与工程化 (Observability)
-*   **Logging System**：完全参照 Java 生产级标准，构建了详细的 `thought.log`，记录 Agent 每一轮的决策链路。
-*   **Streamlit UI**：基于 Python 原生界面框架，实现了打字机流式 (Streaming) 输出效果。
-
----
-
-## 🛠️ 技术栈 (Tech Stack)
-*   **Orchestration**: LangGraph, LangChain
-*   **LLM**: Qwen2.5-72B-Instruct (via SiliconFlow)
-*   **Vector Database**: Milvus (Deployed on Alibaba Cloud ECS)
-*   **Real-time Search**: Tavily Search API
-*   **UI Framework**: Streamlit
-*   **Backend Mindset**: Nearly 10 years of Java Architecture thinking (Design Patterns, Decoupling)
+### V2.0: LangGraph 工作流架构
+*   **升级点**：我引入了 **LangGraph**，把原本“一条线”的逻辑改成了“工作流”。
+*   **它是怎么工作的**：
+    1.  **拆分意图**：大模型先把那一长串问题拆成“穿衣”、“美食”、“避坑”等几个小任务。
+    2.  **自主路由**：大模型自己看，哪些任务该去查 Milvus 知识库（找历史经验），哪些任务该去问 Tavily（找实时信息）。
+    3.  **循环修正**：这就是 ReAct 机制。它会一边找一边想，直到把所有任务都完成了，才会给出最终回答。
 
 ---
 
-## 📦 快速开始 (Quick Start)
+## 🧠 技术干货
 
-1.  **克隆仓库**：
+### 1. 模型微调（LoRA）经验
+在这个项目之前，我曾用 **Qwen1.5-14B** 做过 LoRA 微调实验（产出了 2.3GB 的模型包），目的是让 AI 说话有“纪录片”的感觉。
+*   **我的感悟**：微调能改变 AI 的说话风格，但要让它不胡说八道，还是得靠 RAG（检索增强）。
+*   **当前方案**：2.0 版本我选了 **Qwen2.5-72B API**。因为 Agent 这种需要“动脑子规划”的活儿，大模型的智商必须在线。
+
+### 2. 数据库与实时搜索
+*   **Milvus**：在阿里云自建的向量库，存的是哈尔滨本地老铁总结的最正宗、最避坑的干货。
+*   **混合检索**：结合语义搜索和分类标签，保证找得准、找得快。
+*   **Tavily Search**：给 AI 装上“眼睛”，让它能实时看到冰雪大世界的最新公告。
+
+### 3. 工程化落地（Java 标准）
+*   **日志系统**：我按写 Java 生产系统的习惯，搞了一套详细的日志。Agent 查了什么、搜了什么，后台看得一清二楚。
+*   **流式输出**：Streamlit 做的前端，回答时像打字机一样一个字一个字出，体验贼好。
+
+---
+
+## 🛠️ 技术栈
+*   **编排**: LangGraph, LangChain
+*   **大脑**: 通义千问 Qwen2.5-72B (硅基流动提供)
+*   **记忆**: Milvus (部署在阿里云服务器)
+*   **实时搜索**: Tavily Search API
+*   **界面**: Streamlit
+*   **后端思维**: 10 年 Java 架构底蕴 (设计模式、逻辑解耦、稳定压倒一切)
+
+---
+
+## 📦 快速开始
+
+1.  **克隆代码**：
     ```bash
     git clone https://github.com/M-O-Node/Harbin_Ice_Agent.git
     ```
-2.  **安装依赖**：
+2.  **装依赖**：
     ```bash
     pip install -r requirements.txt
     ```
-3.  **配置环境**：
-    在根目录创建 `.env` 文件并填入你的 `OPENAI_API_KEY`, `TAVILY_API_KEY`, `MILVUS_HOST`。
-4.  **启动应用**：
+3.  **配置 Key**：
+    在 `.env` 文件里填上你的 `OPENAI_API_KEY`, `TAVILY_API_KEY` 和 `MILVUS_HOST`。
+4.  **跑起来**：
     ```bash
     streamlit run ui/app.py
     ```
 
 ---
 
-## 🤝 关于作者 (Author)
-一名在 Java 后端领域深耕近 10 年，现全身心拥抱 AIGC 浪潮的开发者。我坚信 **"Attention is all you need, but Logic is all you earn"**。我擅长将深厚的后端架构经验与前沿的 Agent 技术结合，构建稳定、高效且能解决实际商业问题的 AI 应用。
-
----
+## 🤝 关于作者
+一名在 Java 领域深耕 10 年，现在一心扎进 AI 浪潮里的开发者。
+**相信“挑战让人进步”**。
+我擅长结合后端架构思维与 Agent 技术，解决实际业务痛点。
