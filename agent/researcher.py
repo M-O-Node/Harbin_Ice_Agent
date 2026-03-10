@@ -61,7 +61,7 @@ def call_model(state: AgentState):
     面对南方小土豆的复杂问题, 如果本地库没有, 一定要善用实时搜索. 
     最终的回答必须条理清晰
     """)
-    last_msg = state['messages'][-1].content
+    last_msg = state['messages'][-1]
     if hasattr(last_msg, 'content'):
         last_user_msg = last_msg.content
     else:

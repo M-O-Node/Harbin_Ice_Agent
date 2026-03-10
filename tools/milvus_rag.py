@@ -13,7 +13,7 @@ load_dotenv()
 
 # 读取 Milvus 配置
 ALIYUN_IP = os.getenv('MILVUS_HOST', '127.0.0.1')
-MILVUS_PROT = os.getenv('MILVUS_PORT', '19530')
+MILVUS_PORT = os.getenv('MILVUS_PORT', '19530')
 
 # 1. 初始化 Embedding 模型 (那个 1.0 中用过的模型)
 embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
@@ -21,7 +21,7 @@ embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/paraphrase-
 # 2. 连接 Milvus
 vector_db = Milvus(
     embeddings,
-    connection_args={'host': ALIYUN_IP, 'port': MILVUS_PROT},
+    connection_args={'host': ALIYUN_IP, 'port': MILVUS_PORT},
     collection_name='harbin_agent_kb',  # 1.0 用过的
 )
 

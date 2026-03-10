@@ -3,6 +3,7 @@ langchain_core==1.2.17
 langchain_huggingface==1.2.1
 langchain_openai==1.1.10
 langchain_tavily==0.2.17
+langchain-milvus==0.1.7
 langgraph==1.0.10
 python-dotenv==1.2.2
 streamlit==1.55.0
