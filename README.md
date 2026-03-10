@@ -1,4 +1,4 @@
-# 📋 Harbin-Ice-Agent 2.0: ❄️ 冰雪智游智能体
+# 📋 Harbin-Ice-Agent 2.0: ❄️ 哈尔滨冬季智能导游
 
 > **A Production-Ready Multi-Agent System for Harbin Tourism built with LangGraph, Milvus, and Tavily.**
 
